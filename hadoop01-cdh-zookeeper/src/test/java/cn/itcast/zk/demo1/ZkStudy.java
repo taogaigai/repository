@@ -33,7 +33,6 @@ public class ZkStudy {
                 .withMode(CreateMode.PERSISTENT)
                 .forPath("/createNode02","helloworld".getBytes());
         client.close();
-
     }
 
     /**
@@ -49,16 +48,12 @@ public class ZkStudy {
                 .withMode(CreateMode.EPHEMERAL)
                 .forPath("/hello5/myTempNode","tempNode".getBytes());
         Thread.sleep(5000);
-
         client.close();
-
-
     }
 
     /**
      * 创建永久序列化节点
      */
-
 
     /**
      * 创建临时序列化节点
@@ -144,26 +139,14 @@ public class ZkStudy {
                         default:
                             System.out.println("什么也不做");
                             break;
-
-
                     }
-
-
-
-
-
                 }
-
-
-
             }
         });
 
         //开始我们的监听
         cache.start();
         Thread.sleep(600000000);
-
-
 
     }
 
