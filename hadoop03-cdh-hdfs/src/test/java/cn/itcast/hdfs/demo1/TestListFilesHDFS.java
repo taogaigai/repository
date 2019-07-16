@@ -1,8 +1,10 @@
 package cn.itcast.hdfs.demo1;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.*;
-import org.testng.annotations.Test;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.net.URI;

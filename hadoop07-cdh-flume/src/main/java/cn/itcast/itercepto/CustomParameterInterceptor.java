@@ -4,6 +4,7 @@ import com.google.common.base.Charsets;
 import org.apache.flume.Context;
 import org.apache.flume.Event;
 import org.apache.flume.interceptor.Interceptor;
+
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -15,30 +16,30 @@ import static cn.itcast.itercepto.CustomParameterInterceptor.Constants.*;
 
 
 public class CustomParameterInterceptor implements Interceptor {
-    /** The field_separator.指明每一行字段的分隔符 */
+
+    //The field_separator.指明每一行字段的分隔符
     private final String fields_separator;
-
-    /** The indexs.通过分隔符分割后，指明需要那列的字段 下标*/
+    //The indexs.通过分隔符分割后，指明需要那列的字段 下标
     private final String indexs;
-
-    /** The indexs_separator. 多个下标的分隔符*/
+    //The indexs_separator. 多个下标的分隔符
     private final String indexs_separator;
+    //The encrypted_field_index. 需要加密的字段下标
+    private final String encrypted_field_index;
 
     /**
-     *
      * @param indexs
      * @param indexs_separator
      */
-    public CustomParameterInterceptor( String fields_separator,
-                                       String indexs, String indexs_separator,String encrypted_field_index) {
+    public CustomParameterInterceptor(String fields_separator,
+                                      String indexs, String indexs_separator, String encrypted_field_index) {
         String f = fields_separator.trim();
         String i = indexs_separator.trim();
         this.indexs = indexs;
-        this.encrypted_field_index=encrypted_field_index.trim();
+        this.encrypted_field_index = encrypted_field_index.trim();
         if (!f.equals("")) {
             f = UnicodeToString(f);
         }
-        this.fields_separator =f;
+        this.fields_separator = f;
         if (!i.equals("")) {
             i = UnicodeToString(i);
         }
@@ -55,8 +56,7 @@ public class CustomParameterInterceptor implements Interceptor {
      * @data:2015-6-30
      */
 
-    /** The encrypted_field_index. 需要加密的字段下标*/
-    private final String encrypted_field_index;
+
     public static String UnicodeToString(String str) {
         Pattern pattern = Pattern.compile("(\\\\u(\\p{XDigit}{4}))");
         Matcher matcher = pattern.matcher(str);
@@ -82,18 +82,18 @@ public class CustomParameterInterceptor implements Interceptor {
             String[] fields_spilts = line.split(fields_separator);
             // indexs 也是我们从外部传入进来的，表示我们需要获取哪些下标的字段数据
             String[] indexs_split = indexs.split(indexs_separator);
-            String newLine="";
+            String newLine = "";
             for (int i = 0; i < indexs_split.length; i++) {
                 int parseInt = Integer.parseInt(indexs_split[i]);
                 //对加密字段进行加密
-                if(!"".equals(encrypted_field_index)&&encrypted_field_index.equals(indexs_split[i])){
-                    newLine+=StringUtils.GetMD5Code(fields_spilts[parseInt]);
-                }else{
-                    newLine+=fields_spilts[parseInt];
+                if (!"".equals(encrypted_field_index) && encrypted_field_index.equals(indexs_split[i])) {
+                    newLine += StringUtils.GetMD5Code(fields_spilts[parseInt]);
+                } else {
+                    newLine += fields_spilts[parseInt];
                 }
 
-                if(i!=indexs_split.length-1){
-                    newLine+=fields_separator;
+                if (i != indexs_split.length - 1) {
+                    newLine += fields_separator;
                 }
             }
             event.setBody(newLine.getBytes(Charsets.UTF_8));
@@ -140,22 +140,31 @@ public class CustomParameterInterceptor implements Interceptor {
      * 在flume采集配置文件中通过制定该Builder来创建Interceptor对象
      * 可以在Builder中获取、解析flume采集配置文件中的拦截器Interceptor的自定义参数：
      * 字段分隔符，字段下标，下标分隔符、加密字段下标 ...等
-     * @author
      *
+     * @author
      */
     public static class Builder implements Interceptor.Builder {
 
-        /** The fields_separator.指明每一行字段的分隔符 */
-        private  String fields_separator;
+        /**
+         * The fields_separator.指明每一行字段的分隔符
+         */
+        private String fields_separator;
 
-        /** The indexs.通过分隔符分割后，指明需要那列的字段 下标*/
-        private  String indexs;
+        /**
+         * The indexs.通过分隔符分割后，指明需要那列的字段 下标
+         */
+        private String indexs;
 
-        /** The indexs_separator. 多个下标下标的分隔符*/
-        private  String indexs_separator;
+        /**
+         * The indexs_separator. 多个下标下标的分隔符
+         */
+        private String indexs_separator;
 
-        /** The encrypted_field. 需要加密的字段下标*/
-        private  String encrypted_field_index;
+        /**
+         * The encrypted_field. 需要加密的字段下标
+         */
+        private String encrypted_field_index;
+
         /*
          * @see org.apache.flume.conf.Configurable#configure(org.apache.flume.Context)
          */
@@ -163,57 +172,80 @@ public class CustomParameterInterceptor implements Interceptor {
             fields_separator = context.getString(FIELD_SEPARATOR, DEFAULT_FIELD_SEPARATOR);
             indexs = context.getString(INDEXS, DEFAULT_INDEXS);
             indexs_separator = context.getString(INDEXS_SEPARATOR, DEFAULT_INDEXS_SEPARATOR);
-            encrypted_field_index= context.getString(ENCRYPTED_FIELD_INDEX, DEFAULT_ENCRYPTED_FIELD_INDEX);
+            encrypted_field_index = context.getString(ENCRYPTED_FIELD_INDEX, DEFAULT_ENCRYPTED_FIELD_INDEX);
         }
+
         /*
          * @see org.apache.flume.interceptor.Interceptor.Builder#build()
          */
         public Interceptor build() {
-            return new CustomParameterInterceptor(fields_separator, indexs, indexs_separator,encrypted_field_index);
+            return new CustomParameterInterceptor(fields_separator, indexs, indexs_separator, encrypted_field_index);
         }
     }
+
     /**
      * 常量
-     *
      */
     public static class Constants {
-        /** The Constant FIELD_SEPARATOR. */
+        /**
+         * The Constant FIELD_SEPARATOR.
+         */
         public static final String FIELD_SEPARATOR = "fields_separator";
 
-        /** The Constant DEFAULT_FIELD_SEPARATOR. */
-        public static final String DEFAULT_FIELD_SEPARATOR =" ";
+        /**
+         * The Constant DEFAULT_FIELD_SEPARATOR.
+         */
+        public static final String DEFAULT_FIELD_SEPARATOR = " ";
 
-        /** The Constant INDEXS. */
+        /**
+         * The Constant INDEXS.
+         */
         public static final String INDEXS = "indexs";
 
-        /** The Constant DEFAULT_INDEXS. */
+        /**
+         * The Constant DEFAULT_INDEXS.
+         */
         public static final String DEFAULT_INDEXS = "0";
 
-        /** The Constant INDEXS_SEPARATOR. */
+        /**
+         * The Constant INDEXS_SEPARATOR.
+         */
         public static final String INDEXS_SEPARATOR = "indexs_separator";
 
-        /** The Constant DEFAULT_INDEXS_SEPARATOR. */
+        /**
+         * The Constant DEFAULT_INDEXS_SEPARATOR.
+         */
         public static final String DEFAULT_INDEXS_SEPARATOR = ",";
 
-        /** The Constant ENCRYPTED_FIELD_INDEX. */
+        /**
+         * The Constant ENCRYPTED_FIELD_INDEX.
+         */
         public static final String ENCRYPTED_FIELD_INDEX = "encrypted_field_index";
 
-        /** The Constant DEFAUL_TENCRYPTED_FIELD_INDEX. */
+        /**
+         * The Constant DEFAUL_TENCRYPTED_FIELD_INDEX.
+         */
         public static final String DEFAULT_ENCRYPTED_FIELD_INDEX = "";
 
-        /** The Constant PROCESSTIME. */
+        /**
+         * The Constant PROCESSTIME.
+         */
         public static final String PROCESSTIME = "processTime";
-        /** The Constant PROCESSTIME. */
+        /**
+         * The Constant PROCESSTIME.
+         */
         public static final String DEFAULT_PROCESSTIME = "a";
 
     }
+
     /**
      * 工具类：字符串md5加密
      */
     public static class StringUtils {
         // 全局数组
-        private final static String[] strDigits = { "0", "1", "2", "3", "4", "5",
-                "6", "7", "8", "9", "a", "b", "c", "d", "e", "f" };
+        private final static String[] strDigits = {"0", "1", "2", "3", "4", "5",
+                "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"};
+
         // 返回形式为数字跟字符串
         private static String byteToArrayString(byte bByte) {
             int iRet = bByte;
@@ -258,6 +290,4 @@ public class CustomParameterInterceptor implements Interceptor {
             return resultString;
         }
     }
-
-
 }
