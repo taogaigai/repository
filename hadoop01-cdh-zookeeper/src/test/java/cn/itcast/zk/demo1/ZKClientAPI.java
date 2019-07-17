@@ -11,13 +11,13 @@ import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.zookeeper.CreateMode;
 import org.junit.Test;
 
-public class ZkStudy {
+public class ZKClientAPI {
 
     /*
     创建永久节点
      */
     @Test
-    public void createNode() throws Exception {
+    public void createPersistentNode() throws Exception {
         System.out.println("hello  world");
         //定义我们的连接字符串
         String connectString = "node01:2181,node02:2181,node03:2181";
@@ -31,7 +31,7 @@ public class ZkStudy {
         //创建永久节点
         client.create().creatingParentsIfNeeded()
                 .withMode(CreateMode.PERSISTENT)
-                .forPath("/node01", "helloworld".getBytes());
+                .forPath("/node02", "123456".getBytes());
         client.close();
     }
 
@@ -46,7 +46,7 @@ public class ZkStudy {
         client.start();
         client.create().creatingParentsIfNeeded()
                 .withMode(CreateMode.EPHEMERAL)
-                .forPath("/hello5/tempNode", "tempNode".getBytes());
+                .forPath("/tempNodes/temp01", "123456".getBytes());
         Thread.sleep(5000);
         client.close();
     }
@@ -69,7 +69,7 @@ public class ZkStudy {
         CuratorFramework client = CuratorFrameworkFactory.newClient("node01:2181", new ExponentialBackoffRetry(5000, 3));
         client.start();
         //设置我们的数据
-        client.setData().forPath("/node01", "word5".getBytes());
+        client.setData().forPath("/node01", "123".getBytes());
         client.close();
     }
 
@@ -78,10 +78,10 @@ public class ZkStudy {
      * 节点数据的查询
      */
     @Test
-    public void getDatas() throws Exception {
+    public void getNodeData() throws Exception {
 
         //获取zk的客户端
-        CuratorFramework client = CuratorFrameworkFactory.newClient("node03:2181", new ExponentialBackoffRetry(6000, 6));
+        CuratorFramework client = CuratorFrameworkFactory.newClient("node01:2181,node02:2181,node03:2181", new ExponentialBackoffRetry(6000, 6));
         client.start();
         byte[] bytes = client.getData().forPath("/node01");
         System.out.println(new String(bytes));
@@ -141,8 +141,5 @@ public class ZkStudy {
         //开始我们的监听
         cache.start();
         Thread.sleep(600000000);
-
     }
-
-
 }
