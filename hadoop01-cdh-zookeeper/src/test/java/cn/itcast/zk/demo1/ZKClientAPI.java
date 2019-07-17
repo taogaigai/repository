@@ -47,18 +47,38 @@ public class ZKClientAPI {
         client.create().creatingParentsIfNeeded()
                 .withMode(CreateMode.EPHEMERAL)
                 .forPath("/tempNodes/temp01", "123456".getBytes());
-        Thread.sleep(5000);
         client.close();
     }
 
     /**
      * 创建永久序列化节点
      */
+    @Test
+    public void createPersistentSeqNode() throws Exception {
+
+        //获取客户端
+        CuratorFramework client = CuratorFrameworkFactory.newClient("node01:2181,node02:2181,node03:2181", new ExponentialBackoffRetry(5000, 5));
+        client.start();
+        client.create().creatingParentsIfNeeded()
+                .withMode(CreateMode.PERSISTENT_SEQUENTIAL)
+                .forPath("/per_seq_node", "123456".getBytes());
+        client.close();
+    }
 
     /**
      * 创建临时序列化节点
      */
+    @Test
+    public void createEphSeqNode() throws Exception {
 
+        //获取客户端
+        CuratorFramework client = CuratorFrameworkFactory.newClient("node01:2181,node02:2181,node03:2181", new ExponentialBackoffRetry(5000, 5));
+        client.start();
+        client.create().creatingParentsIfNeeded()
+                .withMode(CreateMode.EPHEMERAL_SEQUENTIAL)
+                .forPath("/eph_seq_node", "123456".getBytes());
+        client.close();
+    }
 
     /**
      * 修改节点的数据
@@ -69,22 +89,35 @@ public class ZKClientAPI {
         CuratorFramework client = CuratorFrameworkFactory.newClient("node01:2181", new ExponentialBackoffRetry(5000, 3));
         client.start();
         //设置我们的数据
-        client.setData().forPath("/node01", "123".getBytes());
+        client.setData().forPath("/node01", "123456".getBytes());
         client.close();
     }
-
 
     /**
      * 节点数据的查询
      */
     @Test
     public void getNodeData() throws Exception {
-
         //获取zk的客户端
         CuratorFramework client = CuratorFrameworkFactory.newClient("node01:2181,node02:2181,node03:2181", new ExponentialBackoffRetry(6000, 6));
         client.start();
         byte[] bytes = client.getData().forPath("/node01");
         System.out.println(new String(bytes));
+        client.close();
+    }
+
+    /**
+     * 删除节点
+     */
+    @Test
+    public void deleteNode() throws Exception {
+        //获取zk的客户端
+        CuratorFramework client = CuratorFrameworkFactory.newClient("node01:2181,node02:2181,node03:2181", new ExponentialBackoffRetry(6000, 6));
+        client.start();
+        client.delete().forPath("/node01");//只能删除叶子节点
+        //client.delete().deletingChildrenIfNeeded().forPath("/node01"); //删除一个节点,并且递归删除其所有的子节点
+        //client.delete().withVersion(10086).forPath("/node01"); //删除一个节点，强制指定版本进行删除
+        //client.delete().guaranteed().forPath("/node01"); //删除一个节点，强制保证删除
         client.close();
     }
 
@@ -96,6 +129,8 @@ public class ZKClientAPI {
         //第一步：获取客户端
         CuratorFramework client = CuratorFrameworkFactory.newClient("node01:2181", new ExponentialBackoffRetry(3000, 3));
         client.start();
+
+        //TreeCache可以监控整个树上的所有节点
         TreeCache cache = new TreeCache(client, "/node01");
 
         cache.getListenable().addListener(new TreeCacheListener() {
@@ -103,7 +138,6 @@ public class ZKClientAPI {
              * 通过  new TreeCacheListener  创建一个内部类，覆写childEvent方法，
              * @param curatorFramework  操作zk的客户端
              * @param treeCacheEvent  事件通知类型  这个类型里面封装了节点的修改，删除，新增等等一些列的操作
-             * @throws Exception
              */
             @Override
             public void childEvent(CuratorFramework curatorFramework, TreeCacheEvent treeCacheEvent) throws Exception {
