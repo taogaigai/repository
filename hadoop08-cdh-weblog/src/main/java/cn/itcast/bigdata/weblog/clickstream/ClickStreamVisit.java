@@ -27,8 +27,6 @@ import java.util.Comparator;
  * 输入数据：pageviews模型结果数据
  * 从pageviews模型结果数据中进一步梳理出visit模型
  * sessionid  start-time   out-time   start-page   out-page   pagecounts  ......
- *
- * @author
  */
 public class ClickStreamVisit extends Configured implements Tool {
     @Override
@@ -55,8 +53,8 @@ public class ClickStreamVisit extends Configured implements Tool {
         job.setInputFormatClass(TextInputFormat.class);
         job.setOutputFormatClass(TextOutputFormat.class);
 
-        TextInputFormat.addInputPath(job, new Path("file:///F:\\传智播客大数据离线阶段课程资料\\8、大数据离线第八天\\日志文件数据\\pageViewOut2"));
-        TextOutputFormat.setOutputPath(job, new Path("file:///F:\\传智播客大数据离线阶段课程资料\\8、大数据离线第八天\\日志文件数据\\clickStreamVisit2"));
+        TextInputFormat.addInputPath(job, new Path("file:///d:/mr/11_weblog日志文件数据/out_page_view"));
+        TextOutputFormat.setOutputPath(job, new Path("file:///d:/mr/11_weblog日志文件数据/out_visit"));
 
         job.setMapperClass(ClickStreamVisitMapper.class);
         job.setReducerClass(ClickStreamVisitReducer.class);
@@ -77,8 +75,9 @@ public class ClickStreamVisit extends Configured implements Tool {
      * 这里的key2   用session来作为我们的key2
      */
     static class ClickStreamVisitMapper extends Mapper<LongWritable, Text, Text, PageViewsBean> {
-        PageViewsBean pvBean = new PageViewsBean();
+
         Text k = new Text();
+        PageViewsBean pvBean = new PageViewsBean();
 
         @Override
         protected void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
@@ -95,7 +94,6 @@ public class ClickStreamVisit extends Configured implements Tool {
     }
 
     static class ClickStreamVisitReducer extends Reducer<Text, PageViewsBean, NullWritable, VisitBean> {
-
         @Override
         protected void reduce(Text session, Iterable<PageViewsBean> pvBeans, Context context) throws IOException, InterruptedException {
 
@@ -142,5 +140,4 @@ public class ClickStreamVisit extends Configured implements Tool {
     public static void main(String[] args) throws Exception {
         ToolRunner.run(new Configuration(), new ClickStreamVisit(), args);
     }
-
 }

@@ -150,5 +150,4 @@ public class WebLogBean implements Writable {
         out.writeUTF(null == http_referer ? "" : http_referer);
         out.writeUTF(null == http_user_agent ? "" : http_user_agent);
     }
-
 }

@@ -27,7 +27,6 @@ public class WebLogParser {
             if (null == time_local || "".equals(time_local)) {
                 time_local = "-invalid_time-";
             }
-
             webLogBean.setTime_local(time_local);
             webLogBean.setRequest(arr[6]);
             webLogBean.setStatus(arr[8]);

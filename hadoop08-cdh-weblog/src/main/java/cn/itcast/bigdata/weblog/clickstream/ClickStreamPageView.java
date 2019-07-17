@@ -43,6 +43,8 @@ public class ClickStreamPageView extends Configured implements Tool {
         Configuration conf = super.getConf();
         Job job = Job.getInstance(conf);
 
+        job.setJarByClass(ClickStreamPageView.class);
+
 	    /*
         String inputPath="hdfs://node01:8020/weblog/"+DateUtil.getYestDate()+"/weblogPreOut";
         String outputPath="hdfs://node01:8020/weblog/"+DateUtil.getYestDate()+"/pageViewOut";
@@ -57,13 +59,11 @@ public class ClickStreamPageView extends Configured implements Tool {
 		FileOutputFormat.setOutputPath(job, new Path(outputPath));
 		*/
 
-        job.setJarByClass(ClickStreamPageView.class);
-
         job.setInputFormatClass(TextInputFormat.class);
         job.setOutputFormatClass(TextOutputFormat.class);
 
-        TextInputFormat.addInputPath(job, new Path("file:///d:/mr/11_weblog日志文件数据/input"));
-        TextOutputFormat.setOutputPath(job, new Path("file:///d:/mr/11_weblog日志文件数据/out"));
+        TextInputFormat.addInputPath(job, new Path("file:///d:/mr/11_weblog日志文件数据/out_pre_valid"));
+        TextOutputFormat.setOutputPath(job, new Path("file:///d:/mr/11_weblog日志文件数据/out_page_view"));
 
         job.setMapperClass(ClickStreamMapper.class);
         job.setReducerClass(ClickStreamReducer.class);
@@ -100,28 +100,23 @@ public class ClickStreamPageView extends Configured implements Tool {
     }
 
     static class ClickStreamReducer extends Reducer<Text, WebLogBean, NullWritable, Text> {
+
         Text v = new Text();
 
         /**
          * reduce阶段接收到的key就是我们的IP
          * 接收到的value就是我们一行行的数据
-         *
-         * @param key
-         * @param values
-         * @param context
-         * @throws IOException
-         * @throws InterruptedException
          */
         @Override
         protected void reduce(Text key, Iterable<WebLogBean> values, Context context) throws IOException, InterruptedException {
-            ArrayList<WebLogBean> beans = new ArrayList<WebLogBean>();
+            List<WebLogBean> beans = new ArrayList<WebLogBean>();
             // 先将一个用户的所有访问记录中的时间拿出来排序
             try {
-                //循环遍历V2，这里面装的，都是我们的同一个用的数据
+                //循环遍历v2，这里面装的，都是我们的同一个用的数据
                 for (WebLogBean bean : values) {
                     //	beans.add(bean);
                     //为什么list集合当中不能直接添加循环出来的这个bean？
-                    //这里通过属性拷贝，每次new  一个对象，避免了bean的属性值每次覆盖
+                    //这里通过属性拷贝，每次new一个对象，避免了bean的属性值每次覆盖
                     //这是涉及到java的深浅拷贝问题
                     WebLogBean webLogBean = new WebLogBean();
                     try {
@@ -149,7 +144,6 @@ public class ClickStreamPageView extends Configured implements Tool {
                             return 0;
                         }
                     }
-
                 });
 
                 /**
@@ -157,23 +151,19 @@ public class ClickStreamPageView extends Configured implements Tool {
                  * 核心思想：
                  * 就是比较相邻两条记录中的时间差，如果时间差<30分钟，则该两条记录属于同一个session
                  * 否则，就属于不同的session
-                 *
                  */
-
                 int step = 1;
                 //定义一个uuid作为我们的session编号
-                String session = UUID.randomUUID().toString();
+                String session = UUID.randomUUID().toString().replace("-", "");
                 ///经过排序之后，集合里面的数据都是按照时间来排好序了
                 for (int i = 0; i < beans.size(); i++) {
                     WebLogBean bean = beans.get(i);
                     // 如果仅有1条数据，则直接输出
                     if (1 == beans.size()) {
-
                         // 设置默认停留时长为60s
-                        v.set(session + "\001" + key.toString() + "\001" + bean.getRemote_user() + "\001" + bean.getTime_local() + "\001" + bean.getRequest() + "\001" + step + "\001" + (60) + "\001" + bean.getHttp_referer() + "\001" + bean.getHttp_user_agent() + "\001" + bean.getBody_bytes_sent() + "\001"
-                                + bean.getStatus());
+                        v.set(session + "\001" + key.toString() + "\001" + bean.getRemote_user() + "\001" + bean.getTime_local() + "\001" + bean.getRequest() + "\001" + step + "\001" + (60) + "\001" + bean.getHttp_referer() + "\001" + bean.getHttp_user_agent() + "\001" + bean.getBody_bytes_sent() + "\001" + bean.getStatus());
                         context.write(NullWritable.get(), v);
-                        session = UUID.randomUUID().toString();
+                        //session = UUID.randomUUID().toString().replace("-", "");
                         break;
                     }
 
@@ -185,19 +175,16 @@ public class ClickStreamPageView extends Configured implements Tool {
                     long timeDiff = timeDiff(toDate(bean.getTime_local()), toDate(beans.get(i - 1).getTime_local()));
                     // 如果本次-上次时间差<30分钟，则输出前一次的页面访问信息
                     if (timeDiff < 30 * 60 * 1000) {
-
-                        v.set(session + "\001" + key.toString() + "\001" + beans.get(i - 1).getRemote_user() + "\001" + beans.get(i - 1).getTime_local() + "\001" + beans.get(i - 1).getRequest() + "\001" + step + "\001" + (timeDiff / 1000) + "\001" + beans.get(i - 1).getHttp_referer() + "\001"
-                                + beans.get(i - 1).getHttp_user_agent() + "\001" + beans.get(i - 1).getBody_bytes_sent() + "\001" + beans.get(i - 1).getStatus());
+                        v.set(session + "\001" + key.toString() + "\001" + beans.get(i - 1).getRemote_user() + "\001" + beans.get(i - 1).getTime_local() + "\001" + beans.get(i - 1).getRequest() + "\001" + step + "\001" + (timeDiff / 1000) + "\001" + beans.get(i - 1).getHttp_referer() + "\001" + beans.get(i - 1).getHttp_user_agent() + "\001" + beans.get(i - 1).getBody_bytes_sent() + "\001" + beans.get(i - 1).getStatus());
                         context.write(NullWritable.get(), v);
                         step++;
                     } else {
                         // 如果本次-上次时间差>30分钟，则输出前一次的页面访问信息且将step重置，以分隔为新的visit
-                        v.set(session + "\001" + key.toString() + "\001" + beans.get(i - 1).getRemote_user() + "\001" + beans.get(i - 1).getTime_local() + "\001" + beans.get(i - 1).getRequest() + "\001" + (step) + "\001" + (60) + "\001" + beans.get(i - 1).getHttp_referer() + "\001"
-                                + beans.get(i - 1).getHttp_user_agent() + "\001" + beans.get(i - 1).getBody_bytes_sent() + "\001" + beans.get(i - 1).getStatus());
+                        v.set(session + "\001" + key.toString() + "\001" + beans.get(i - 1).getRemote_user() + "\001" + beans.get(i - 1).getTime_local() + "\001" + beans.get(i - 1).getRequest() + "\001" + (step) + "\001" + (60) + "\001" + beans.get(i - 1).getHttp_referer() + "\001" + beans.get(i - 1).getHttp_user_agent() + "\001" + beans.get(i - 1).getBody_bytes_sent() + "\001" + beans.get(i - 1).getStatus());
                         context.write(NullWritable.get(), v);
                         // 输出完上一条之后，重置step编号
                         step = 1;
-                        session = UUID.randomUUID().toString();
+                        session = UUID.randomUUID().toString().replace("-", "");
                     }
 
                     // 如果此次遍历的是最后一条，则将本条直接输出
@@ -207,12 +194,9 @@ public class ClickStreamPageView extends Configured implements Tool {
                         context.write(NullWritable.get(), v);
                     }
                 }
-
             } catch (ParseException e) {
                 e.printStackTrace();
-
             }
-
         }
 
         private String toStr(Date date) {
@@ -229,15 +213,12 @@ public class ClickStreamPageView extends Configured implements Tool {
             Date d1 = toDate(time1);
             Date d2 = toDate(time2);
             return d1.getTime() - d2.getTime();
-
         }
 
         private long timeDiff(Date time1, Date time2) throws ParseException {
             // date  调用 getTime获取毫秒值
             return time1.getTime() - time2.getTime();
-
         }
-
     }
 
     public static void main(String[] args) throws Exception {

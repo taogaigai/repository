@@ -9,9 +9,7 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
-import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
-import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
@@ -28,7 +26,6 @@ public class WeblogPreProcess extends Configured implements Tool {
 
     @Override
     public int run(String[] args) throws Exception {
-        //Configuration conf = new Configuration();
         Configuration conf = super.getConf();
         Job job = Job.getInstance(conf);
 
@@ -48,11 +45,12 @@ public class WeblogPreProcess extends Configured implements Tool {
 		job.setInputFormatClass(TextInputFormat.class);
 		job.setOutputFormatClass(TextOutputFormat.class);
 		*/
+
         job.setInputFormatClass(TextInputFormat.class);
         job.setOutputFormatClass(TextOutputFormat.class);
 
-        FileInputFormat.addInputPath(job, new Path("file:///F:\\传智播客大数据离线阶段课程资料\\8、大数据离线第八天\\日志文件数据\\input"));
-        FileOutputFormat.setOutputPath(job, new Path("file:///F:\\传智播客大数据离线阶段课程资料\\8、大数据离线第八天\\日志文件数据\\weblogPreOut2"));
+        TextInputFormat.addInputPath(job, new Path("file:///d:/mr/11_weblog日志文件数据/input"));
+        TextOutputFormat.setOutputPath(job, new Path("file:///d:/mr/11_weblog日志文件数据/out_pre_valid"));
 
         job.setMapperClass(WeblogPreProcessMapper.class);
 
@@ -90,7 +88,6 @@ public class WeblogPreProcess extends Configured implements Tool {
             pages.add("/hadoop-hive-intro/");
             pages.add("/hadoop-zookeeper-intro/");
             pages.add("/hadoop-mahout-roadmap/");
-
         }
 
         @Override
@@ -101,7 +98,7 @@ public class WeblogPreProcess extends Configured implements Tool {
             if (webLogBean != null) {
                 // 过滤js/图片/css等静态资源
                 WebLogParser.filtStaticResource(webLogBean, pages);
-                /* if (!webLogBean.isValid()) return; */
+                if (!webLogBean.isValid()) return;
                 k.set(webLogBean.toString());
                 context.write(k, v);
             }

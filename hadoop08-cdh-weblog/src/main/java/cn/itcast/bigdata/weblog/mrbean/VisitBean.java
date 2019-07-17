@@ -103,7 +103,6 @@ public class VisitBean implements Writable {
         this.outPage = in.readUTF();
         this.referal = in.readUTF();
         this.pageVisits = in.readInt();
-
     }
 
     @Override
@@ -116,7 +115,6 @@ public class VisitBean implements Writable {
         out.writeUTF(outPage);
         out.writeUTF(referal);
         out.writeInt(pageVisits);
-
     }
 
     @Override

@@ -124,7 +124,6 @@ public class PageViewsBean implements Writable {
         this.useragent = in.readUTF();
         this.bytes_send = in.readUTF();
         this.status = in.readUTF();
-
     }
 
     @Override
@@ -139,7 +138,6 @@ public class PageViewsBean implements Writable {
         out.writeUTF(useragent);
         out.writeUTF(bytes_send);
         out.writeUTF(status);
-
     }
 
 }
