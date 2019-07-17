@@ -8,8 +8,6 @@ public class DateUtil {
 
     /**
      * 获取昨日的日期
-     *
-     * @return
      */
     public static String getYestDate() {
         Calendar instance = Calendar.getInstance();
