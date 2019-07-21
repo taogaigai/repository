@@ -18,9 +18,8 @@ public class ZKClientAPI {
      */
     @Test
     public void createPersistentNode() throws Exception {
-        System.out.println("hello  world");
         //定义我们的连接字符串
-        String connectString = "node01:2181,node02:2181,node03:2181";
+        String connectString = "node01:2181";
         //设置我们的重试机制
         RetryPolicy retryPolicy = new ExponentialBackoffRetry(3000, 3);
 
@@ -30,8 +29,8 @@ public class ZKClientAPI {
         client.start();
         //创建永久节点
         client.create().creatingParentsIfNeeded()
-                .withMode(CreateMode.PERSISTENT)
-                .forPath("/node02", "123456".getBytes());
+                .withMode(CreateMode.PERSISTENT_SEQUENTIAL)
+                .forPath("/node03");
         client.close();
     }
 
@@ -89,7 +88,7 @@ public class ZKClientAPI {
         CuratorFramework client = CuratorFrameworkFactory.newClient("node01:2181", new ExponentialBackoffRetry(5000, 3));
         client.start();
         //设置我们的数据
-        client.setData().forPath("/node01", "123456".getBytes());
+        client.setData().forPath("/node030000000008", "123456".getBytes());
         client.close();
     }
 

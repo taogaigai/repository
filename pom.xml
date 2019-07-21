@@ -11,6 +11,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <modules>
+        <module>hadoop00-cdh-rpc</module>
         <module>hadoop01-cdh-zookeeper</module>
         <module>hadoop03-cdh-hdfs</module>
         <module>hadoop04-cdh-mr</module>

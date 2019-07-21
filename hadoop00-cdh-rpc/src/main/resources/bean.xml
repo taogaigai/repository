@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="http://www.springframework.org/schema/beans" xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+	<context:component-scan base-package="cn.itcast.rpc.test"></context:component-scan>
+
+	<bean id="serviceRegistry" class="cn.itcast.rpc.registry.ServiceRegistry">
+		<constructor-arg name="registryAddress" value="node01:2181"></constructor-arg>
+	</bean>
+
+	<bean id="rpcServer" class="cn.itcast.rpc.server.RpcServer">
+		<constructor-arg name="serverAddress" value="localhost:8888"></constructor-arg>
+		<constructor-arg name="serviceRegistry" ref="serviceRegistry"></constructor-arg>
+	</bean>
+
+</beans>
+        	
